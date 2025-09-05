@@ -217,6 +217,17 @@
                     // check if parameter ?video_id=xxx is given
                     await this.checkVideoID(window.location);
 
+                    // preload images
+                    const images = ['1-resize.png', '2-resize.png', '3-resize.png'];
+                    for (const img of images) {
+                        await new Promise((resolve, reject) => {
+                            const image = new Image();
+                            image.src = img;
+                            image.onload = resolve;
+                            image.onerror = reject;
+                        });
+                    }
+
                     // load data
                     const response = await fetch('table.json');
                     const data = await response.json();
