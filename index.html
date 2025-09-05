@@ -210,9 +210,11 @@
                 iframeURL: '',
 
                 async init() {
-                    window.navigation.addEventListener("navigate", async (event) => {
-                        await this.checkVideoID(event.destination.url);
-                    });
+                    if ('navigation' in window) {
+                        window.navigation.addEventListener("navigate", async (event) => {
+                            await this.checkVideoID(event.destination.url);
+                        });
+                    }
 
                     // check if parameter ?video_id=xxx is given
                     await this.checkVideoID(window.location);
