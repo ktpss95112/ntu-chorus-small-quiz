@@ -144,60 +144,58 @@
                 description: '歡迎來到真命天曲小測驗！<br>一起進入合唱的魔法森林，找尋你的真命天曲！',
                 options: ['開始'],
                 optionsKey: ['start'],
+                background: '1-resize.png',
             },
             {
                 type: 'language',
                 description: '你在魔法森林中迷路，聽到四種不同的吟唱，每種聲音似乎指引著不同的道路。你會跟隨哪一道？',
                 options: ['柔和熟悉，如家園的呼喚', '清晰明快，如遠方旅者的語調', '濃厚異國韻律，如古堡回音', '陌生神秘，難以辨認的聲音'],
                 optionsKey: ['中文', '英文', '歐洲', '其他語言'],
+                background: '2-resize.png',
             },
             {
                 type: 'category',
                 description: '你在森林深處感受到五股不同的能量，每一股都在呼喚你。你會被哪一股吸引？',
                 options: ['莊嚴古老，如遠古低語', '輕盈活潑，如夜空星光', '樸實溫暖，如篝火陪伴', '神秘深邃，帶來未知力量', '戲劇瑰麗，如奇幻冒險'],
                 optionsKey: ['古典宗教作品', '流行編曲', '民謠與傳統歌謠', '藝術歌曲或現代合唱作品', '音樂劇或動畫或電影配樂'],
+                background: '3-resize.png',
             },
             {
                 type: 'polygon',
                 description: '你來到被霧氣籠罩的遺跡，地面閃爍著六個古老符印。你會選擇哪一個？',
                 options: ['圓環，象徵完整循環', '三角，散發堅定挑戰', '菱形，如水晶閃耀', '長方，厚重穩固', '七芒星，神秘難解', '雲朵，輕盈自由'],
                 optionsKey: ['圓形', '三角形', '菱形', '長方形', '七角星', '雲朵'],
+                background: '1-resize.png',
             },
             {
                 type: 'atmosphere',
                 description: '在森林深處，你遇見四種神秘的生靈。牠們靜靜注視著你，彷彿在等待你的選擇。你會選擇哪位夥伴？',
                 options: ['溫柔的月光鹿', '快樂的歌雀', '莊嚴的巨鷹', '奇異的幻蝶'],
                 optionsKey: ['溫柔安靜或抒情', '熱鬧快樂或輕快', '莊嚴神聖或神秘壯闊', '創意或新體驗'],
+                background: '2-resize.png',
             },
             {
                 type: 'sorcerer',
                 description: '你在森林深處發現一塊閃爍的石碑，上面記載著四種心靈魔法。你會選擇哪一種？',
                 options: ['讀心術', '情緒操控術', '幻術', '心靈護盾'],
                 optionsKey: ['讀心術', '情緒操控術', '幻術', '心靈護盾'],
+                background: '3-resize.png',
             },
             {
                 type: 'viewCount',
                 description: '你來到森林的果樹林，面前有幾叢魔法果實。你想帶走多少？',
                 options: ['一小顆', '幾把', '一籃', '滿滿一袋'],
                 optionsKey: [0, 1, 2, 3],
+                background: '1-resize.png',
             },
             {
                 type: 'language_chinese',
                 description: '當你走到森林的邊緣，天空突然裂開一道光芒，映出四種不同的幻影。這最後一道景象，將決定你對森林的記憶與理解。你覺得你看到的是哪一種幻影？',
                 options: ['熱鬧熠熠的光影', '平凡安穩的景象', '奇特而充滿特色的幻影', '與你毫無關聯的幻象'],
                 optionsKey: ['華語', '台語', '客語', '無'],
+                background: '2-resize.png',
             },
         ];
-
-        async function fadeout() {
-            document.querySelectorAll('.fade-able').forEach(el => { el.style.opacity = 0; });
-            await new Promise(resolve => setTimeout(resolve, 500));
-        }
-
-        async function fadein() {
-            document.querySelectorAll('.fade-able').forEach(el => { el.style.opacity = 1; });
-            await new Promise(resolve => setTimeout(resolve, 500));
-        }
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('app', () => ({
@@ -224,7 +222,7 @@
                     const data = await response.json();
                     this.table = data;
                     this.loading = false;
-                    await fadein();
+                    await this.fadein();
                 },
 
                 async checkVideoID(url) {
@@ -235,15 +233,37 @@
                         const newIframeURL = `https://www.youtube.com/embed/${video_id}`;
                         if (this.iframeURL !== newIframeURL) {
                             this.iframeURL = newIframeURL;
-                            await fadein();
+                            await this.fadein();
                         }
                     } else {
                         this.videoID = null;
                     }
                 },
 
+                async fadeout() {
+                    document.querySelectorAll('.fade-able').forEach(el => { el.style.opacity = 0; });
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                },
+
+                async fadein() {
+                    // change background of description if exists
+                    const bg = this.quiz[this.currentIndex]?.background;
+                    if (bg) {
+                        document.querySelector('.description').style.backgroundImage = `url(${bg})`;
+                        document.querySelector('.description').style.backgroundSize = 'cover';
+                        document.querySelector('.description').style.backgroundPosition = 'center';
+                        document.querySelector('.description').style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
+                        document.querySelector('.description').style.backgroundBlendMode = 'overlay';
+                    } else {
+                        document.querySelector('.description').style.backgroundImage = '';
+                    }
+
+                    document.querySelectorAll('.fade-able').forEach(el => { el.style.opacity = 1; });
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                },
+
                 async clickOption(index) {
-                    await fadeout();
+                    await this.fadeout();
 
                     // update state
                     const currentQuiz = this.quiz[this.currentIndex];
@@ -253,7 +273,7 @@
 
                     if (this.currentIndex < this.quiz.length - 1) {
                         this.currentIndex += 1;
-                        await fadein();
+                        await this.fadein();
                     } else {
                         // sleep for 3 seconds :P
                         this.loading = true;
@@ -268,19 +288,19 @@
                         url.searchParams.set('video_id', videoID);
                         window.history.pushState({}, '', url);
                         this.videoID = videoID;
-                        await fadein();
+                        await this.fadein();
                     }
                 },
 
                 async restartQuiz() {
-                    await fadeout();
+                    await this.fadeout();
                     this.currentIndex = 0;
                     this.selected = {};
                     this.videoID = null;
                     const url = new URL(window.location);
                     url.searchParams.delete('video_id');
                     window.history.pushState({}, '', url);
-                    await fadein();
+                    await this.fadein();
                 },
 
                 calculateResult() {
