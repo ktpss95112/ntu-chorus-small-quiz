@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(45deg, #515ada 0%, #a5f0ff 50%, #ffb3ff 100%);
+            min-height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+            font-size: 18px;
+        }
+        .main-outer {
+            max-width: 400px;
+            max-height: 800px;
+            margin: auto;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .main-inner {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.4);
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 40px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .flex-40 {
+            flex: 1 1 40%;
+            display: flex;
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+        }
+        .flex-60 {
+            flex: 1 1 60%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .flex-20 {
+            flex: 1 1 20%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .fade-able {
+            transition: opacity 0.5s ease;
+            opacity: 0;
+        }
+        .description {
+            margin: 30px 30px 0px 30px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.6);
+            padding: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            flex-direction: column;
+        }
+        .youtube-container {
+            margin: 20px;
+        }
+        .option-container {
+            margin: 20px;
+        }
+        .option {
+            width: 80%;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 10px 0;
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            user-select: none;
+            font-size: 14px;
+        }
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <title>真命天曲小測驗</title>
+</head>
+<body>
+    <div class="main-outer" x-data="app">
+        <!-- loading page -->
+        <div x-show="loading" class="loader"></div>
+
+        <!-- normal game -->
+        <div x-show="!loading && videoID === null" class="main-inner">
+            <div class="flex-40 description fade-able" x-html="quiz[currentIndex].description"></div>
+            <div class="flex-60 option-container fade-able">
+                <template x-for="(option, index) in quiz[currentIndex].options">
+                    <div class="option" x-text="option" @click="clickOption(index)"></div>
+                </template>
+            </div>
+        </div>
+
+        <!-- game over -->
+        <div x-show="!loading && videoID !== null" class="main-inner">
+            <div class="flex-40 description fade-able" x-html="`恭喜你，你的真命天曲是：<br><a href='https://www.youtube.com/watch?v=${videoID}' target='_blank'>點擊這裡觀看</a>`"></div>
+            <iframe class="flex-40 youtube-container fade-able" x-bind:src="iframeURL" frameborder="0" allowfullscreen></iframe>
+            <div class="flex-20">
+                <div class="option fade-able" @click="restartQuiz()">再玩一次</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quiz = [
+            {
+                type: 'start',
+                description: '歡迎來到真命天曲小測驗！<br>一起進入合唱的魔法森林，找尋你的真命天曲！',
+                options: ['開始'],
+                optionsKey: ['start'],
+            },
+            {
+                type: 'language',
+                description: '你在魔法森林中迷路，聽到四種不同的吟唱，每種聲音似乎指引著不同的道路。你會跟隨哪一道？',
+                options: ['柔和熟悉，如家園的呼喚', '清晰明快，如遠方旅者的語調', '濃厚異國韻律，如古堡回音', '陌生神秘，難以辨認的聲音'],
+                optionsKey: ['中文', '英文', '歐洲', '其他語言'],
+            },
+            {
+                type: 'category',
+                description: '你在森林深處感受到五股不同的能量，每一股都在呼喚你。你會被哪一股吸引？',
+                options: ['莊嚴古老，如遠古低語', '輕盈活潑，如夜空星光', '樸實溫暖，如篝火陪伴', '神秘深邃，帶來未知力量', '戲劇瑰麗，如奇幻冒險'],
+                optionsKey: ['古典宗教作品', '流行編曲', '民謠與傳統歌謠', '藝術歌曲或現代合唱作品', '音樂劇或動畫或電影配樂'],
+            },
+            {
+                type: 'polygon',
+                description: '你來到被霧氣籠罩的遺跡，地面閃爍著六個古老符印。你會選擇哪一個？',
+                options: ['圓環，象徵完整循環', '三角，散發堅定挑戰', '菱形，如水晶閃耀', '長方，厚重穩固', '七芒星，神秘難解', '雲朵，輕盈自由'],
+                optionsKey: ['圓形', '三角形', '菱形', '長方形', '七角星', '雲朵'],
+            },
+            {
+                type: 'atmosphere',
+                description: '在森林深處，你遇見四種神秘的生靈。牠們靜靜注視著你，彷彿在等待你的選擇。你會選擇哪位夥伴？',
+                options: ['溫柔的月光鹿', '快樂的歌雀', '莊嚴的巨鷹', '奇異的幻蝶'],
+                optionsKey: ['溫柔安靜或抒情', '熱鬧快樂或輕快', '莊嚴神聖或神秘壯闊', '創意或新體驗'],
+            },
+            {
+                type: 'sorcerer',
+                description: '你在森林深處發現一塊閃爍的石碑，上面記載著四種心靈魔法。你會選擇哪一種？',
+                options: ['讀心術', '情緒操控術', '幻術', '心靈護盾'],
+                optionsKey: ['讀心術', '情緒操控術', '幻術', '心靈護盾'],
+            },
+            {
+                type: 'viewCount',
+                description: '你來到森林的果樹林，面前有幾叢魔法果實。你想帶走多少？',
+                options: ['一小顆', '幾把', '一籃', '滿滿一袋'],
+                optionsKey: [0, 1, 2, 3],
+            },
+            {
+                type: 'language_chinese',
+                description: '當你走到森林的邊緣，天空突然裂開一道光芒，映出四種不同的幻影。這最後一道景象，將決定你對森林的記憶與理解。你覺得你看到的是哪一種幻影？',
+                options: ['熱鬧熠熠的光影', '平凡安穩的景象', '奇特而充滿特色的幻影', '與你毫無關聯的幻象'],
+                optionsKey: ['華語', '台語', '客語', '無'],
+            },
+        ];
+
+        async function fadeout() {
+            document.querySelectorAll('.fade-able').forEach(el => { el.style.opacity = 0; });
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        async function fadein() {
+            document.querySelectorAll('.fade-able').forEach(el => { el.style.opacity = 1; });
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('app', () => ({
+                currentIndex: 0,
+                quiz: quiz,
+                table: null,
+                selected: {},
+                videoID: null,
+                loading: true,
+                iframeURL: '',
+
+                async init() {
+                    window.navigation.addEventListener("navigate", async (event) => {
+                        await this.checkVideoID(event.destination.url);
+                    });
+
+                    // check if parameter ?video_id=xxx is given
+                    await this.checkVideoID(window.location);
+
+                    // load data
+                    const response = await fetch('table.json');
+                    const data = await response.json();
+                    this.table = data;
+                    this.loading = false;
+                    await fadein();
+                },
+
+                async checkVideoID(url) {
+                    const urlParams = new URLSearchParams((new URL(url)).search);
+                    const video_id = urlParams.get('video_id');
+                    if (video_id) {
+                        this.videoID = video_id;
+                        const newIframeURL = `https://www.youtube.com/embed/${video_id}`;
+                        if (this.iframeURL !== newIframeURL) {
+                            this.iframeURL = newIframeURL;
+                            await fadein();
+                        }
+                    } else {
+                        this.videoID = null;
+                    }
+                },
+
+                async clickOption(index) {
+                    await fadeout();
+
+                    // update state
+                    const currentQuiz = this.quiz[this.currentIndex];
+                    const currentType = currentQuiz.type;
+                    const selectedOption = currentQuiz.optionsKey[index];
+                    this.selected[currentType] = selectedOption;
+
+                    if (this.currentIndex < this.quiz.length - 1) {
+                        this.currentIndex += 1;
+                        await fadein();
+                    } else {
+                        // sleep for 3 seconds :P
+                        this.loading = true;
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        this.loading = false;
+
+                        // calculate result
+                        const videoID = this.calculateResult();
+
+                        // push parameter ?video_id=xxx to the url without reloading the page
+                        const url = new URL(window.location);
+                        url.searchParams.set('video_id', videoID);
+                        window.history.pushState({}, '', url);
+                        this.videoID = videoID;
+                        await fadein();
+                    }
+                },
+
+                async restartQuiz() {
+                    await fadeout();
+                    this.currentIndex = 0;
+                    this.selected = {};
+                    this.videoID = null;
+                    const url = new URL(window.location);
+                    url.searchParams.delete('video_id');
+                    window.history.pushState({}, '', url);
+                    await fadein();
+                },
+
+                calculateResult() {
+                    let pool = Object.keys(this.table);
+                    const order = ['language', 'category', 'atmosphere', 'language_chinese', 'polygon', 'sorcerer'];
+                    for (const key of order) {
+                        let pool_after = pool.filter(id => this.table[id].quiz[key] === this.selected[key]);
+                        if (pool_after.length > 0) {
+                            pool = pool_after;
+                        }
+                    }
+
+                    if (pool.length === 1) {
+                        return pool[0];
+                    }
+
+                    // handle view count if needed
+                    pool.sort((a, b) => this.table[a].viewCount - this.table[b].viewCount);
+                    const selectedIndex = this.selected.viewCount;
+                    if (pool.length === 2) {
+                        return (selectedIndex < 2) ? pool[0] : pool[1];
+                    } else {
+                        return (selectedIndex < pool.length) ? pool[selectedIndex] : pool[pool.length - 1];
+                    }
+                },
+            }));
+        });
+    </script>
+</body>
+</html>
