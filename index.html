@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="favicon.jpg"/>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         body {
@@ -91,6 +92,19 @@
             user-select: none;
             font-size: 14px;
         }
+        .icon {
+            display: inline-flex;
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            margin: 15px 5px 0 5px;
+            border-radius: 50%;
+            box-shadow: 0 0 16px 3px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            user-select: none;
+        }
         .loader {
             width: 48px;
             height: 48px;
@@ -129,8 +143,20 @@
 
         <!-- game over -->
         <div x-show="!loading && videoID !== null" class="main-inner">
-            <div class="flex-40 description fade-able" x-html="`恭喜你，你的真命天曲是：<br><a href='https://www.youtube.com/watch?v=${videoID}' target='_blank'>點擊這裡觀看</a>`"></div>
+            <div class="flex-20 description fade-able">
+                <span>恭喜你！你的真命天曲是：</span>
+                <a x-bind:href="'https://www.youtube.com/watch?v=' + videoID" target='_blank'>點擊這裡觀看</a>
+            </div>
             <iframe class="flex-40 youtube-container fade-able" x-bind:src="iframeURL" frameborder="0" allowfullscreen></iframe>
+            <div class="flex-20 description fade-able" style="margin-top: 0;">
+                <span>追蹤我們～</span>
+                <div>
+                    <a class="icon" href="https://www.facebook.com/NTUChorus" target="_blank"><img src="fb.png" width="24" height="24"></a>
+                    <a class="icon" href="https://instagram.com/NTUChorus" target="_blank"><img src="ig.png" width="24" height="24"></a>
+                    <a class="icon" href="https://www.youtube.com/NTUChorus" target="_blank"><img src="yt.png" width="24" height="24"></a>
+                    <a class="icon" href="https://linktr.ee/ntuchorus" target="_blank"><img src="four_square.png" width="24" height="24"></a>
+                </div>
+            </div>
             <div class="flex-20">
                 <div class="option fade-able" @click="restartQuiz()">再玩一次</div>
             </div>
