@@ -304,14 +304,10 @@
                 },
 
                 async restartQuiz() {
-                    await this.fadeout();
-                    this.currentIndex = 0;
-                    this.selected = {};
-                    this.videoID = null;
+                    // open a new page to avoid reloading the page
                     const url = new URL(window.location);
                     url.searchParams.delete('video_id');
-                    window.history.pushState({}, '', url);
-                    await this.fadein();
+                    window.open(url.toString(), '_blank');
                 },
 
                 calculateResult() {
